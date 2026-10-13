@@ -176,7 +176,7 @@ object CobaltManager {
                     .unregistered()
                 val result = registration
                     .requestVerificationCode(digits.toLong())
-                    .join(5, TimeUnit.MINUTES)
+                    .get(5, TimeUnit.MINUTES)
                 val bridge = CompletableFuture<String>()
                 codeBridge = bridge
                 _phoneLinkState.value = PhoneLinkState.CodeRequested(digits)
@@ -203,7 +203,7 @@ object CobaltManager {
         bridge.complete(code)
         scope.launch {
             try {
-                val result = unverified.verify().join(5, TimeUnit.MINUTES)
+                val result = unverified.verify().get(5, TimeUnit.MINUTES)
                 val whatsapp = result.whatsapp()
                 attachListeners(whatsapp)
                 api = whatsapp
@@ -455,7 +455,7 @@ object CobaltManager {
     fun disconnect() {
         scope.launch {
             try {
-                api?.disconnect()?.join(10, TimeUnit.SECONDS)
+                api?.disconnect()?.get(10, TimeUnit.SECONDS)
             } catch (_: Throwable) {
                 // Ignore: the socket may already be down.
             }

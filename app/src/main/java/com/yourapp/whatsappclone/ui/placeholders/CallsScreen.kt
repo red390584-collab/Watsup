@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCall
+import androidx.compose.material.icons.filled.AddIcCall
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Call
@@ -62,7 +62,7 @@ fun CallsScreen(navController: androidx.navigation.NavController) {
                         Icon(Icons.Filled.Search, contentDescription = "Search", tint = colors.textSecondary)
                     }
                     IconButton(onClick = { }) {
-                        Icon(Icons.Filled.AddCall, contentDescription = "New call", tint = colors.textSecondary)
+                        Icon(Icons.Filled.AddIcCall, contentDescription = "New call", tint = colors.textSecondary)
                     }
                     IconButton(onClick = { }) {
                         Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = colors.textSecondary)
