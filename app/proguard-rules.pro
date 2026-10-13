@@ -2,12 +2,12 @@
 # By default, the flags in this file are appended to flags specified
 # in the Android SDK's proguard-android-optimize.txt configuration.
 
-# Cobalt (it.auties.*) is used reflectively by its protobuf serializer.
--keep class it.auties.** { *; }
--keep interface it.auties.** { *; }
--dontwarn it.auties.**
+# Keep the WhatsApp bridge and its protobuf runtime intact if minification is
+# ever enabled (release builds currently set isMinifyEnabled = false).
+-keep class id.jawa.** { *; }
+-keep class com.google.protobuf.** { *; }
+-dontwarn id.jawa.**
+-dontwarn org.slf4j.**
+# Optional JVM-only classes referenced by transitive jars; absent on Android.
 -dontwarn java.awt.**
 -dontwarn javax.imageio.**
--dontwarn com.aspose.**
--dontwarn com.github.kokorin.jaffree.**
--dontwarn org.slf4j.**

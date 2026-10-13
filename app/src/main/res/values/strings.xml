@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">WhatsApp</string>
     <string name="disclaimer_title">Important — Read Before Continuing</string>
-    <string name="disclaimer_body">This application uses an unofficial, reverse-engineered WhatsApp client (Cobalt). Using it may breach WhatsApp\'s Terms of Service and can result in your phone number being temporarily or permanently banned from WhatsApp. Use only with a number you can afford to lose. You accept full responsibility.</string>
+    <string name="disclaimer_body">This application uses an unofficial, reverse-engineered WhatsApp client (JaWa). Using it may breach WhatsApp\'s Terms of Service and can result in your phone number being temporarily or permanently banned from WhatsApp. Use only with a number you can afford to lose. You accept full responsibility.</string>
     <string name="disclaimer_continue">I Understand — Continue</string>
     <string name="disclaimer_exit">Exit</string>
     <string name="chats">Chats</string>

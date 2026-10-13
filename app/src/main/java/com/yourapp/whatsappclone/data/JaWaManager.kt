@@ -62,7 +62,7 @@ object JaWaManager {
 
     private const val TAG = "JaWaManager"
 
-    // ── Public state flows (same shape as CobaltManager) ──────────────────────
+    // ── Public state flows (the surface the UI consumes) ────────────────────
 
     private val _connectionState = MutableStateFlow<ConnectionStatus>(ConnectionStatus.Idle)
     val connectionState: StateFlow<ConnectionStatus> = _connectionState.asStateFlow()
@@ -233,7 +233,7 @@ object JaWaManager {
                 Log.i(TAG, "JaWa onQr: payload len=${qr.length}")
                 _qrFlow.tryEmit(qr)
                 // Surface the payload as a QrReady state so QrCodePanel renders it
-                // natively (mirrors what CobaltManager did with its QrHandler).
+                // natively from the raw pairing payload.
                 _connectionState.tryEmit(ConnectionStatus.QrReady(qr))
                 // Encode the QR payload as a PNG base64 image for the UI.
                 val b64 = encodeQrToBase64Png(qr)
@@ -383,7 +383,8 @@ object JaWaManager {
      */
     fun submitVerificationCode(code: String) {
         // JaWa 0.0.4 does not expose a public submit-code API (verified via javap).
-        // Keep this function non-suspending to match CobaltManager's public surface;
+        // Keep this function non-suspending to match the established public
+        // surface;
         // the suspend SessionStore read happens inside the manager's IO scope.
         scope.launch {
             val digits = SessionStore.get(appContext).sessionPhone()
