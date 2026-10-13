@@ -107,20 +107,26 @@ object CobaltManager {
 
     // ── QR linking ─────────────────────────────────────────────────────────────
 
-    /** Starts (or restarts) the QR pairing flow with a brand new session. */
+    /**
+     * Starts (or restarts) the QR pairing flow with a brand new session.
+     * Safe to call repeatedly; if a QR/connection is already active it returns
+     * immediately. If a phone-number flow is in progress it is cancelled first.
+     */
     fun startQrLinking() {
         val current = _connectionState.value
-        if (current is ConnectionStatus.Linked ||
-            current is ConnectionStatus.Connecting ||
-            current is ConnectionStatus.QrReady
-        ) {
+        if (current is ConnectionStatus.Linked) {
             return
         }
+        // Cancel any in-flight phone-number flow so the QR session is clean.
+        codeBridge?.complete(null)
+        codeBridge = null
+        pendingUnverified = null
         scope.launch {
             val store = SessionStore.get(appContext)
             val uuid = UUID.randomUUID()
             store.setSessionUuid(uuid.toString())
             store.setSessionPhone(null)
+            _phoneLinkState.value = PhoneLinkState.Idle
             connectWeb(uuid)
         }
     }
@@ -142,12 +148,21 @@ object CobaltManager {
                     existing.get()
                 } else {
                     options.unregistered(QrHandler.toPlainString { payload ->
+                        android.util.Log.i(
+                            "CobaltManager",
+                            "QR code ready, payload length=${payload.length}",
+                        )
                         _connectionState.value = ConnectionStatus.QrReady(payload)
                     })
                 }
                 attachListeners(whatsapp)
                 api = whatsapp
                 whatsapp.connect().join()
+                // If connect succeeded but we never got a QR (e.g. already
+                // registered), surface the appropriate state.
+                if (_connectionState.value is ConnectionStatus.Connecting) {
+                    _connectionState.value = ConnectionStatus.NeedsLink
+                }
             } catch (error: Throwable) {
                 api = null
                 _connectionState.value = ConnectionStatus.Error(
@@ -159,30 +174,51 @@ object CobaltManager {
 
     // ── Phone-number linking ───────────────────────────────────────────────────
 
-    /** Step 1 of the OTP flow: ask WhatsApp to send a verification code. */
+    /**
+     * Step 1 of the OTP flow: ask WhatsApp to send a verification code.
+     * The number must include the country prefix with no punctuation
+     * (e.g. 15551234567 for +1 555-123-4567).
+     *
+     * Cobalt mobile flow: build an Unregistered registration, request the code,
+     * then keep the returned [MobileRegistrationBuilder.Unverified] so the
+     * user-entered code can be submitted via [submitVerificationCode].
+     */
     fun requestVerificationCode(rawPhoneNumber: String) {
         val digits = rawPhoneNumber.filter { it.isDigit() }
         if (digits.length < 7) {
-            _phoneLinkState.value = PhoneLinkState.Error("Enter a valid number with country prefix")
+            _phoneLinkState.value = PhoneLinkState.Error(
+                "Enter a valid phone number (with country prefix, e.g. 15551234567)",
+            )
             return
         }
         _phoneLinkState.value = PhoneLinkState.RequestingCode
         scope.launch {
             try {
                 SessionStore.get(appContext).setSessionPhone(digits)
-                val registration = Whatsapp.mobileBuilder()
+                val unregistered = Whatsapp.mobileBuilder()
                     .serializer(sessionSerializer())
                     .newConnection(digits.toLong())
                     .unregistered()
-                val result = registration
+                // Request the verification code from WhatsApp.
+                val unverifiedResult = unregistered
                     .requestVerificationCode(digits.toLong())
                     .get(5, TimeUnit.MINUTES)
+                val unverified = unverifiedResult.unverified()
+                if (unverified == null) {
+                    SessionStore.get(appContext).setSessionPhone(null)
+                    _phoneLinkState.value = PhoneLinkState.Error(
+                        unverifiedResult.response()
+                            .map { "WhatsApp: ${it}" }
+                            .orElse("Could not start verification for this number"),
+                    )
+                    return@launch
+                }
+                // Bridge so the UI can feed the code back into Cobalt.
                 val bridge = CompletableFuture<String>()
                 codeBridge = bridge
                 _phoneLinkState.value = PhoneLinkState.CodeRequested(digits)
-                result.unverified()
+                pendingUnverified = unverified
                     .verificationCodeSupplier(Supplier<String> { bridge.get(10, TimeUnit.MINUTES) })
-                    .also { pendingUnverified = it }
             } catch (error: Throwable) {
                 SessionStore.get(appContext).setSessionPhone(null)
                 _phoneLinkState.value = PhoneLinkState.Error(
@@ -195,16 +231,31 @@ object CobaltManager {
     @Volatile
     private var pendingUnverified: MobileRegistrationBuilder.Unverified? = null
 
-    /** Step 2 of the OTP flow: submit the code the user typed in. */
+    /**
+     * Step 2 of the OTP flow: submit the code the user typed in. The bridge
+     * must have been created by [requestVerificationCode] and the
+     * [pendingUnverified] must still be holding the same [Unverified] instance.
+     */
     fun submitVerificationCode(code: String) {
-        val bridge = codeBridge ?: return
-        val unverified = pendingUnverified ?: return
+        val bridge = codeBridge ?: run {
+            _phoneLinkState.value = PhoneLinkState.Error("Linking already in progress or expired — try again")
+            return
+        }
+        val unverified = pendingUnverified ?: run {
+            _phoneLinkState.value = PhoneLinkState.Error("Linking already in progress or expired — try again")
+            return
+        }
         _phoneLinkState.value = PhoneLinkState.Verifying
         bridge.complete(code)
+        val toVerify = unverified
         scope.launch {
             try {
-                val result = unverified.verify().get(5, TimeUnit.MINUTES)
+                val result = toVerify.verify().get(5, TimeUnit.MINUTES)
                 val whatsapp = result.whatsapp()
+                // Reset the OTP state so a new flow can be started later.
+                codeBridge = null
+                pendingUnverified = null
+                SessionStore.get(appContext).setSessionPhone(null)
                 attachListeners(whatsapp)
                 api = whatsapp
                 _phoneLinkState.value = PhoneLinkState.Linked
@@ -212,6 +263,9 @@ object CobaltManager {
                 whatsapp.connect().join()
                 refreshChats(whatsapp)
             } catch (error: Throwable) {
+                codeBridge = null
+                pendingUnverified = null
+                SessionStore.get(appContext).setSessionPhone(null)
                 _phoneLinkState.value = PhoneLinkState.Error(
                     error.message ?: error.javaClass.simpleName,
                 )

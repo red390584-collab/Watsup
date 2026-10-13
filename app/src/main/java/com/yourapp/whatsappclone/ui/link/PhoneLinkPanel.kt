@@ -127,18 +127,18 @@ fun PhoneLinkPanel() {
                 Spacer(modifier = Modifier.height(14.dp))
                 OutlinedTextField(
                     value = code,
-                    onValueChange = { input -> code = input.filter { it.isLetterOrDigit() }.take(8) },
+                    onValueChange = { input -> code = input.filter { it.isDigit() }.take(8) },
                     label = { Text("Verification code") },
-                    placeholder = { Text("XXXXXX", color = Muted) },
+                    placeholder = { Text("6-digit code", color = Muted) },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     colors = outlinedColors(colors.textPrimary, colors.textSecondary),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { CobaltManager.submitVerificationCode(code.trim()) },
-                    enabled = code.isNotBlank(),
+                    enabled = code.length >= 4,
                     colors = ButtonDefaults.buttonColors(containerColor = WaGreen, contentColor = Color.White),
                     modifier = Modifier
                         .fillMaxWidth()

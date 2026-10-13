@@ -49,6 +49,11 @@ fun QrCodePanel(status: ConnectionStatus, onRetry: () -> Unit) {
             is ConnectionStatus.QrReady -> {
                 val payload = status.payload
                 val qrBitmap: ImageBitmap? = remember(payload) { qrStringToImageBitmap(payload) }
+                // Size the QR box relative to the payload length: longer payloads
+                // produce denser QR codes, so give them less canvas to keep modules
+                // large enough to scan with a phone camera.
+                val boxSize = if (payload.length > 120) 240.dp else 280.dp
+                val padding = if (payload.length > 120) 8.dp else 12.dp
 
                 Text(
                     text = "Scan this code with your phone",
@@ -67,10 +72,10 @@ fun QrCodePanel(status: ConnectionStatus, onRetry: () -> Unit) {
 
                 Box(
                     modifier = Modifier
-                        .size(280.dp)
+                        .size(boxSize)
                         .clip(RoundedCornerShape(12.dp))
                         .background(WaWhite)
-                        .padding(12.dp),
+                        .padding(padding),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (qrBitmap != null) {
@@ -78,10 +83,11 @@ fun QrCodePanel(status: ConnectionStatus, onRetry: () -> Unit) {
                             bitmap = qrBitmap,
                             contentDescription = "WhatsApp pairing QR code",
                             modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                         )
                     } else {
                         Text(
-                            text = "Could not render QR code",
+                            text = "Could not render QR code (payload ${payload.length})",
                             color = WaPanelDark,
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
@@ -89,11 +95,18 @@ fun QrCodePanel(status: ConnectionStatus, onRetry: () -> Unit) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Waiting for scan…",
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.textSecondary,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Payload ${payload.length} chars · tap retry if it never appears",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.textSecondary,
+                    textAlign = TextAlign.Center,
                 )
             }
 
