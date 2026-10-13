@@ -21,7 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.yourapp.whatsappclone.data.CobaltManager
+import com.yourapp.whatsappclone.data.JaWaManager
 import com.yourapp.whatsappclone.data.ConnectionStatus
 import com.yourapp.whatsappclone.data.SessionStore
 import com.yourapp.whatsappclone.ui.chats.ChatListScreen
@@ -97,7 +97,7 @@ fun AppRoot() {
         }
 
         composable(Routes.CHATS) {
-            val connectionState by CobaltManager.connectionState.collectAsState()
+            val connectionState by JaWaManager.connectionState.collectAsState()
             LaunchedEffect(connectionState) {
                 if (connectionState is ConnectionStatus.NeedsLink) {
                     navController.navigate(Routes.LINK) { popUpTo(0) { inclusive = true } }

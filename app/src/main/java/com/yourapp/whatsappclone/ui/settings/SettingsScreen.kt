@@ -47,7 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yourapp.whatsappclone.R
-import com.yourapp.whatsappclone.data.CobaltManager
+import com.yourapp.whatsappclone.data.JaWaManager
 import com.yourapp.whatsappclone.data.ConnectionStatus
 import com.yourapp.whatsappclone.ui.theme.LocalWaExtendedColors
 import com.yourapp.whatsappclone.ui.theme.Muted
@@ -65,7 +65,7 @@ fun SettingsScreen(
     val colors = LocalWaExtendedColors.current
     val context = LocalContext.current
     val themeMode by ThemeController.mode.collectAsState()
-    val connectionState by CobaltManager.connectionState.collectAsState()
+    val connectionState by JaWaManager.connectionState.collectAsState()
     var showDisconnect by remember { mutableStateOf(false) }
 
     if (showDisconnect) {
@@ -84,7 +84,7 @@ fun SettingsScreen(
                 TextButton(
                     onClick = {
                         showDisconnect = false
-                        CobaltManager.disconnect()
+                        JaWaManager.disconnect()
                         onLoggedOut()
                     },
                 ) {
@@ -257,8 +257,8 @@ fun SettingsScreen(
                         color = colors.textPrimary,
                     )
                     Text(
-                        text = "Personal-use client built on the unofficial Cobalt " +
-                            "WhatsApp Web API. Unofficial use can get your number banned. " +
+                        text = "Personal-use client built on the unofficial JaWa " +
+                            "WhatsApp Web bridge. Unofficial use can get your number banned. " +
                             "Version 1.0",
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.textSecondary,

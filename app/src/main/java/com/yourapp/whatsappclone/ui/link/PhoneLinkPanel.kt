@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.yourapp.whatsappclone.data.CobaltManager
+import com.yourapp.whatsappclone.data.JaWaManager
 import com.yourapp.whatsappclone.data.PhoneLinkState
 import com.yourapp.whatsappclone.ui.theme.LocalWaExtendedColors
 import com.yourapp.whatsappclone.ui.theme.Muted
@@ -39,12 +39,12 @@ import com.yourapp.whatsappclone.ui.theme.WaTealDark
 
 /**
  * Phone-number linking: request a verification code, then submit it.
- * The state machine lives in [CobaltManager].
+ * The state machine lives in [JaWaManager].
  */
 @Composable
 fun PhoneLinkPanel() {
     val colors = LocalWaExtendedColors.current
-    val state by CobaltManager.phoneLinkState.collectAsState()
+    val state by JaWaManager.phoneLinkState.collectAsState()
     var phone by rememberSaveable { mutableStateOf("") }
     var code by rememberSaveable { mutableStateOf("") }
 
@@ -96,7 +96,7 @@ fun PhoneLinkPanel() {
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { CobaltManager.requestVerificationCode(phone) },
+                    onClick = { JaWaManager.requestVerificationCode(phone) },
                     enabled = phone.length >= 7,
                     colors = ButtonDefaults.buttonColors(containerColor = WaGreen, contentColor = Color.White),
                     modifier = Modifier
@@ -137,7 +137,7 @@ fun PhoneLinkPanel() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { CobaltManager.submitVerificationCode(code.trim()) },
+                    onClick = { JaWaManager.submitVerificationCode(code.trim()) },
                     enabled = code.length >= 4,
                     colors = ButtonDefaults.buttonColors(containerColor = WaGreen, contentColor = Color.White),
                     modifier = Modifier

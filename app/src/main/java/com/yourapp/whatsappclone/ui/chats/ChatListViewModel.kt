@@ -2,7 +2,7 @@ package com.yourapp.whatsappclone.ui.chats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yourapp.whatsappclone.data.CobaltManager
+import com.yourapp.whatsappclone.data.JaWaManager
 import com.yourapp.whatsappclone.data.model.UiChat
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,20 +11,20 @@ import kotlinx.coroutines.flow.stateIn
 
 /**
  * Exposes the chat list. Before a device is linked it renders realistic mock
- * data; after linking it mirrors [CobaltManager.chats] in real time.
+ * data; after linking it mirrors [JaWaManager.chats] in real time.
  */
 class ChatListViewModel : ViewModel() {
 
     private val query = kotlinx.coroutines.flow.MutableStateFlow("")
 
     val chats: StateFlow<List<UiChat>> =
-        combine(CobaltManager.chats, query) { real, filter ->
+        combine(JaWaManager.chats, query) { real, filter ->
             val source = if (real.isNotEmpty()) real else mockChats()
             if (filter.isBlank()) source
             else source.filter { it.name.contains(filter, ignoreCase = true) }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, mockChats())
 
-    val isLinked: Boolean get() = CobaltManager.isLinked
+    val isLinked: Boolean get() = JaWaManager.isLinked
 
     fun setQuery(value: String) {
         query.value = value

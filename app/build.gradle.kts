@@ -26,12 +26,13 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        // JaWa 0.0.4 targets Java 21 (per its POM).
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 
     buildFeatures {
@@ -73,11 +74,18 @@ android {
 }
 
 dependencies {
-    // Cobalt: unofficial WhatsApp Web API (JVM). Aspose is excluded because it is
-    // only hosted on Aspose's own maven repo and is not needed for messaging.
-    implementation("com.github.auties00:cobalt:0.0.9") {
-        exclude(group = "com.aspose", module = "aspose-words")
-        exclude(group = "com.github.kokorin.jaffree", module = "jaffree")
+    // JaWa 0.0.4 — pure Java WhatsApp Web bridge (Maven Central).
+    // Verified API via: github.com/jochris/JaWa README + source, and
+    // javap -public on JaWa-0.0.4.jar (id.jawa.client.JaWaClient etc.).
+    implementation("io.github.jochris:JaWa:0.0.4")
+
+    // SLF4J binding so JaWa's logback.xml logging works on Android.
+    implementation("org.slf4j:slf4j-android:1.7.36")
+
+    // JaWa ships its own netty + libsignal transitively; exclude duplicates
+    // that Android's runtime or other deps may also provide.
+    implementation("io.github.jochris:JaWa:0.0.4") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
     }
 
     // Compose
@@ -101,7 +109,7 @@ dependencies {
     // Image loading
     implementation("io.coil-kt:coil-compose:2.6.0")
 
-    // QR generation (encode)
+    // QR generation (encode JaWa's pairing payload for the UI)
     implementation("com.google.zxing:core:3.5.3")
 
     debugImplementation("androidx.compose.ui:ui-tooling")

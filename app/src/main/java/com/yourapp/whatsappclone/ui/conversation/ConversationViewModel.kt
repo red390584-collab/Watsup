@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.yourapp.whatsappclone.data.CobaltManager
+import com.yourapp.whatsappclone.data.JaWaManager
 import com.yourapp.whatsappclone.data.model.MessageReadStatus
 import com.yourapp.whatsappclone.data.model.UiMessage
 import kotlinx.coroutines.delay
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Conversation view model for a single chat. Real messages come from
- * [CobaltManager]; before the device is linked a local demo thread keeps the
+ * [JaWaManager]; before the device is linked a local demo thread keeps the
  * screen fully interactive.
  */
 class ConversationViewModel(private val chatName: String) : ViewModel() {
@@ -26,7 +26,7 @@ class ConversationViewModel(private val chatName: String) : ViewModel() {
     private val localExtra = MutableStateFlow<List<UiMessage>>(emptyList())
 
     val messages: StateFlow<List<UiMessage>> =
-        combine(CobaltManager.messages, localExtra) { real, extra ->
+        combine(JaWaManager.messages, localExtra) { real, extra ->
             val base = real[chatName] ?: demoMessages(chatName)
             (base + extra).distinctBy { it.id }.sortedBy { it.timestampMillis }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, demoMessages(chatName))
@@ -34,8 +34,8 @@ class ConversationViewModel(private val chatName: String) : ViewModel() {
     fun send(text: String) {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return
-        if (CobaltManager.isLinked) {
-            CobaltManager.sendText(chatName, trimmed)
+        if (JaWaManager.isLinked) {
+            JaWaManager.sendText(chatName, trimmed)
             return
         }
         val now = System.currentTimeMillis()
@@ -61,8 +61,8 @@ class ConversationViewModel(private val chatName: String) : ViewModel() {
     }
 
     fun sendImage(uri: Uri) {
-        if (CobaltManager.isLinked) {
-            CobaltManager.sendImage(chatName, uri)
+        if (JaWaManager.isLinked) {
+            JaWaManager.sendImage(chatName, uri)
             return
         }
         localExtra.value = localExtra.value + UiMessage(

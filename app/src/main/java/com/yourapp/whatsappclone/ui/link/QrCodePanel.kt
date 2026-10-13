@@ -31,7 +31,7 @@ import com.yourapp.whatsappclone.ui.theme.WaWhite
 import com.yourapp.whatsappclone.util.qrStringToImageBitmap
 
 /**
- * Renders Cobalt's QR pairing payload as an actual scannable QR bitmap
+ * Renders JaWa's QR pairing payload as an actual scannable QR bitmap
  * (ZXing QRCodeWriter → ImageBitmap), never as text.
  */
 @Composable

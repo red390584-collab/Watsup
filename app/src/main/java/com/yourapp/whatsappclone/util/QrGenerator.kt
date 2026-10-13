@@ -10,7 +10,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 
 /**
- * Encodes a [String] (the Cobalt pairing payload) into a scannable QR
+ * Encodes a [String] (the JaWa pairing payload) into a scannable QR
  * [ImageBitmap] using ZXing's QRCodeWriter. Returns null if encoding fails.
  */
 fun qrStringToImageBitmap(content: String, sizePx: Int = 1024): ImageBitmap? {
@@ -21,7 +21,7 @@ fun qrStringToImageBitmap(content: String, sizePx: Int = 1024): ImageBitmap? {
             EncodeHintType.MARGIN to 1,
             EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H,
         )
-        // Cobalt pairing payloads are long; use a larger matrix so the QR
+        // JaWa pairing payloads are long; use a larger matrix so the QR
         // stays scannable on a phone camera at arm's length.
         val matrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, sizePx, sizePx, hints)
         if (matrix.width <= 0 || matrix.height <= 0) return null
