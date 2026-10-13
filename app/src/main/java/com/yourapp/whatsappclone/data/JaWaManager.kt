@@ -169,8 +169,8 @@ object JaWaManager {
                 authStore = store
 
                 // Build the client. JaWaClient has no builder; configure via fluent
-                // listener/config methods.
-                val creds = AuthCreds.generate()
+                // listener/config methods. Credentials are created by JaWa itself
+                // from the FileAuthStore when it is empty.
                 val client = JaWaClient(store)
                     .listener(jawaListener(uuid))
                     .autoReconnect(true)
@@ -227,11 +227,14 @@ object JaWaManager {
      */
     private fun jawaListener(uuid: UUID): Listener {
         return object : Listener {
-            override fun onQr(qrStrings: java.util.List<String>) {
+            override fun onQr(qrStrings: MutableList<String>) {
                 if (qrStrings.isEmpty()) return
                 val qr = qrStrings[0]
                 Log.i(TAG, "JaWa onQr: payload len=${qr.length}")
                 _qrFlow.tryEmit(qr)
+                // Surface the payload as a QrReady state so QrCodePanel renders it
+                // natively (mirrors what CobaltManager did with its QrHandler).
+                _connectionState.tryEmit(ConnectionStatus.QrReady(qr))
                 // Encode the QR payload as a PNG base64 image for the UI.
                 val b64 = encodeQrToBase64Png(qr)
                 _qrImageBase64.tryEmit(b64)
@@ -288,7 +291,7 @@ object JaWaManager {
             ) {
                 Log.w(TAG, "JaWa onTerminated: $reason detail=$detail permanent=$permanent")
                 if (reason == TerminationReason.REVOKED || reason == TerminationReason.BANNED) {
-                    clearSession()
+                    scope.launch { clearSession() }
                 } else if (!permanent) {
                     // TRANSIENT / VERSION_OBSOLETE / REPLACED — surface as disconnected
                     _connectionState.tryEmit(
@@ -310,8 +313,9 @@ object JaWaManager {
             override fun onAppStateKeysReceived(count: Int) {}
             override fun onAppStateMutations(
                 patchName: id.jawa.feature.appstate.PatchName,
-                mutations: java.util.List<id.jawa.feature.appstate.AppStateProcessor.Mutation>
+                mutations: MutableList<id.jawa.feature.appstate.AppStateProcessor.Mutation>
             ) {}
+            @Suppress("UNUSED_PARAMETER")
             override fun onStanza(node: id.jawa.protocol.codec.BinaryNode) {}
         }
     }
@@ -344,6 +348,7 @@ object JaWaManager {
                     _phoneLinkState.value = PhoneLinkState.Error("Not connected — start linking first")
                     return@launch
                 }
+
                 // requestPairingCode returns a CompletableFuture<String> that completes
                 // with the code. We wait up to 5 minutes.
                 val pairingCodeFuture = c.requestPairingCode(digits, null)
@@ -377,13 +382,16 @@ object JaWaManager {
      * here by calling that method on the client.
      */
     fun submitVerificationCode(code: String) {
-        val digits = SessionStore.get(appContext).sessionPhone()
-        if (digits == null) {
-            _phoneLinkState.value = PhoneLinkState.Error("No pending phone link — try again")
-            return
-        }
-        _phoneLinkState.value = PhoneLinkState.Verifying
+        // JaWa 0.0.4 does not expose a public submit-code API (verified via javap).
+        // Keep this function non-suspending to match CobaltManager's public surface;
+        // the suspend SessionStore read happens inside the manager's IO scope.
         scope.launch {
+            val digits = SessionStore.get(appContext).sessionPhone()
+            if (digits == null) {
+                _phoneLinkState.value = PhoneLinkState.Error("No pending phone link — try again")
+                return@launch
+            }
+            _phoneLinkState.value = PhoneLinkState.Verifying
             try {
                 // JaWa 0.0.4 does not have a submit-code API. The requestPairingCode
                 // future already receives the OTP from WhatsApp. We surface a clear

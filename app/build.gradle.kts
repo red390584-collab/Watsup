@@ -78,19 +78,23 @@ dependencies {
     // Verified API via: github.com/jochris/JaWa README + source, and
     // javap -public on JaWa-0.0.4.jar (id.jawa.client.JaWaClient etc.).
     implementation("io.github.jochris:JaWa:0.0.4") {
-        // JaWa declares com.google.protobuf:protobuf-java, but Android already
-        // brings protobuf-javalite. Exclude the heavy protobuf-java so D8 sees
-        // only the Android-friendly javalite variant and checkDebugDuplicateClasses
-        // passes.
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
+        // JaWa's POM declares BOTH protobuf-java and protobuf-javalite, and
+        // signal-protocol-java (transitive) pulls javalite again — the two jars
+        // ship overlapping com.google.protobuf.* classes, so only one may ship
+        // in an APK (D8 fails with "Duplicate class" otherwise). JaWa's generated
+        // Wa* classes extend com.google.protobuf.GeneratedMessageV3 (full
+        // protobuf), and the full protobuf-java jar also contains the lite
+        // runtime classes (GeneratedMessageLite) that signal-protocol-java needs.
+        // Verified with `javap -classpath JaWa-0.0.4.jar 'id.jawa.proto.Wa$Message'`.
+        exclude(group = "com.google.protobuf", module = "protobuf-javalite")
     }
 
     // SLF4J binding so JaWa's logging has an Android-backed implementation.
     implementation("org.slf4j:slf4j-android:1.7.36")
 
-    // Protobuf — Android ships protobuf-javalite; keep only that variant.
-    // JaWa's protobuf-java is excluded above so D8 does not see both.
-    implementation("com.google.protobuf:protobuf-javalite:3.10.0")
+    // Full protobuf runtime (3.10.0 = JaWa's protobuf.version). JaWa brings it
+    // transitively; pin it explicitly and keep javalite out (excluded above).
+    implementation("com.google.protobuf:protobuf-java:3.10.0")
 
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:2024.05.00")

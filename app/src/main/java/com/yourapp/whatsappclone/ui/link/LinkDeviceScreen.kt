@@ -1,6 +1,5 @@
 package com.yourapp.whatsappclone.ui.link
 
-import android.webkit.WebView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,7 +25,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.yourapp.whatsappclone.R
 import com.yourapp.whatsappclone.data.JaWaManager
@@ -34,35 +32,22 @@ import com.yourapp.whatsappclone.data.ConnectionStatus
 import com.yourapp.whatsappclone.ui.theme.LocalWaExtendedColors
 import com.yourapp.whatsappclone.ui.theme.WaGreen
 
-/** Renders the QR pairing payload JaWa emits as a scannable QR code. */
+/**
+ * Device-linking screen with the two official flows: QR code (recommended)
+ * and phone number + verification code. The pairing payload arrives from
+ * [JaWaManager] as [ConnectionStatus.QrReady] and is rendered natively by
+ * [QrCodePanel] via ZXing (this app has no WebView/JS layer).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinkDeviceScreen(onLinked: () -> Unit) {
     val colors = LocalWaExtendedColors.current
-    val context = LocalContext.current
     val connectionState by JaWaManager.connectionState.collectAsState()
-    val qrFlow by JaWaManager.qrFlow.collectAsState()
-    val qrImageBase64 by JaWaManager.qrImageBase64.collectAsState()
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         // Kick off the QR linking flow when this screen enters the back stack.
         JaWaManager.startQrLinking()
-    }
-
-    // JaWa renders the pairing QR as a PNG and re-emits it as base64. Push that to
-    // the JS side so the WebView can show a crisp <img> instead of regenerating the
-    // matrix in JS. We still emit onQrUpdate(raw) below for backward compatibility.
-    LaunchedEffect(qrImageBase64) {
-        qrImageBase64?.let { b64 ->
-            val escaped = b64.replace("'", "\\'")
-            val js = "window.bridge.onQrImage('${escaped}')"
-            context.mainLooper?.let { looper ->
-                // evaluateJavascript must run on a thread with a Looper; LocalContext
-                // gives us a Context we can use to reach the WebView only if one exists.
-                @Suppress("UNUSED_VARIABLE")
-                val _ = looper
-            }
-        }
     }
 
     // When JaWa signals a successful pair, forward the user into the app.
