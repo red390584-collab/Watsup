@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="wa_green">#25D366</color>
+    <color name="wa_teal_dark">#075E54</color>
+    <color name="wa_teal">#128C7E</color>
+    <color name="wa_white">#FFFFFF</color>
+    <color name="wa_panel_dark">#111B21</color>
+    <color name="wa_panel_dark_alt">#202C33</color>
+    <color name="wa_background">#F0F2F5</color>
+    <color name="wa_ink">#111B21</color>
+    <color name="wa_muted">#667781</color>
+    <color name="wa_border">#E9EDEF</color>
+    <color name="wa_bubble_sent_light">#DCF8C6</color>
+    <color name="wa_bubble_sent_dark">#005C4B</color>
+    <color name="wa_check_blue">#34B7F1</color>
+</resources>

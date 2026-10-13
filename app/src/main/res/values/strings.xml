@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WhatsApp</string>
+    <string name="disclaimer_title">Important — Read Before Continuing</string>
+    <string name="disclaimer_body">This application uses an unofficial, reverse-engineered WhatsApp client (Cobalt). Using it may breach WhatsApp\'s Terms of Service and can result in your phone number being temporarily or permanently banned from WhatsApp. Use only with a number you can afford to lose. You accept full responsibility.</string>
+    <string name="disclaimer_continue">I Understand — Continue</string>
+    <string name="disclaimer_exit">Exit</string>
+    <string name="chats">Chats</string>
+    <string name="updates">Updates</string>
+    <string name="communities">Communities</string>
+    <string name="calls">Calls</string>
+    <string name="settings">Settings</string>
+    <string name="search">Search</string>
+    <string name="new_chat">New chat</string>
+    <string name="type_message">Type a message</string>
+    <string name="send">Send</string>
+    <string name="link_device">Link a device</string>
+</resources>

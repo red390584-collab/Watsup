@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chat-bubble launcher foreground on a green background. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.5"
+        android:scaleY="0.5"
+        android:translateX="27"
+        android:translateY="27">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M54,12C30.8,12 12,29.6 12,51.5C12,58.6 13.9,65.2 17.4,70.9L12,96L37.7,90.9C43,93.8 49.3,95.4 54,95.4C77.2,95.4 96,77.8 96,55.9C96,34 77.2,12 54,12ZM54,85.4C49.6,85.4 44.3,84.1 39.9,81.6L28.4,85L31.6,74.4C28.2,69.3 26.2,63.2 26.2,55.9C26.2,41.2 38.6,29.2 54,29.2C69.4,29.2 81.8,41.2 81.8,55.9C81.8,70.6 69.4,85.4 54,85.4Z" />
+    </group>
+</vector>
