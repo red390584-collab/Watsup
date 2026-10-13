@@ -77,16 +77,20 @@ dependencies {
     // JaWa 0.0.4 — pure Java WhatsApp Web bridge (Maven Central).
     // Verified API via: github.com/jochris/JaWa README + source, and
     // javap -public on JaWa-0.0.4.jar (id.jawa.client.JaWaClient etc.).
-    implementation("io.github.jochris:JaWa:0.0.4")
+    implementation("io.github.jochris:JaWa:0.0.4") {
+        // JaWa declares com.google.protobuf:protobuf-java, but Android already
+        // brings protobuf-javalite. Exclude the heavy protobuf-java so D8 sees
+        // only the Android-friendly javalite variant and checkDebugDuplicateClasses
+        // passes.
+        exclude(group = "com.google.protobuf", module = "protobuf-java")
+    }
 
-    // SLF4J binding so JaWa's logback.xml logging works on Android.
+    // SLF4J binding so JaWa's logging has an Android-backed implementation.
     implementation("org.slf4j:slf4j-android:1.7.36")
 
-    // JaWa ships its own netty + libsignal transitively; exclude duplicates
-    // that Android's runtime or other deps may also provide.
-    implementation("io.github.jochris:JaWa:0.0.4") {
-        exclude(group = "org.slf4j", module = "slf4j-api")
-    }
+    // Protobuf — Android ships protobuf-javalite; keep only that variant.
+    // JaWa's protobuf-java is excluded above so D8 does not see both.
+    implementation("com.google.protobuf:protobuf-javalite:3.10.0")
 
     // Compose
     val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
