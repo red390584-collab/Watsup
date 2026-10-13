@@ -87,10 +87,22 @@ dependencies {
         // runtime classes (GeneratedMessageLite) that signal-protocol-java needs.
         // Verified with `javap -classpath JaWa-0.0.4.jar 'id.jawa.proto.Wa$Message'`.
         exclude(group = "com.google.protobuf", module = "protobuf-javalite")
+
+        // Logback is a desktop-only SLF4J backend: JaWa's own code never
+        // references ch.qos.logback classes (scanned all 2466 classes in the
+        // jar — zero hits; only org.slf4j), and logback-classic + logback-core
+        // both ship META-INF/INDEX.LIST, which fails :app:mergeDebugJavaResource
+        // with "2 files found with path META-INF/INDEX.LIST". slf4j-simple below
+        // is the Android-safe 2.x provider instead.
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
     }
 
-    // SLF4J binding so JaWa's logging has an Android-backed implementation.
-    implementation("org.slf4j:slf4j-android:1.7.36")
+    // SLF4J provider for JaWa (slf4j-api 2.0.13 arrives transitively from
+    // JaWa). slf4j-simple 2.0.x is a real slf4j-api-2.x provider that only
+    // writes to System.err → visible in logcat. Note: slf4j-android:1.7.36 is a
+    // 1.7 StaticLoggerBinder binding and would be inert under slf4j-api 2.x.
+    implementation("org.slf4j:slf4j-simple:2.0.13")
 
     // Full protobuf runtime (3.10.0 = JaWa's protobuf.version). JaWa brings it
     // transitively; pin it explicitly and keep javalite out (excluded above).
