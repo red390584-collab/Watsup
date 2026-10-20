@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.first
 private val Context.sessionDataStore: DataStore<Preferences> by preferencesDataStore(name = "wa_clone_session")
 
 /**
- * DataStore-backed persistence for the linked session identifier, the
- * first-launch disclaimer acceptance and the user's theme choice.
+ * DataStore-backed persistence for the first-launch disclaimer acceptance and
+ * the user's theme choice. (The WhatsApp session itself lives in the
+ * WebView's cookie/DOM-storage stores.)
  */
 class SessionStore private constructor(private val dataStore: DataStore<Preferences>) {
 
@@ -22,24 +23,6 @@ class SessionStore private constructor(private val dataStore: DataStore<Preferen
 
     suspend fun setDisclaimerAccepted(accepted: Boolean) {
         dataStore.edit { it[KEY_DISCLAIMER_ACCEPTED] = accepted }
-    }
-
-    suspend fun sessionUuid(): String? =
-        dataStore.data.first()[KEY_SESSION_UUID]
-
-    suspend fun setSessionUuid(uuid: String?) {
-        dataStore.edit { prefs ->
-            if (uuid == null) prefs.remove(KEY_SESSION_UUID) else prefs[KEY_SESSION_UUID] = uuid
-        }
-    }
-
-    suspend fun sessionPhone(): String? =
-        dataStore.data.first()[KEY_SESSION_PHONE]
-
-    suspend fun setSessionPhone(phone: String?) {
-        dataStore.edit { prefs ->
-            if (phone == null) prefs.remove(KEY_SESSION_PHONE) else prefs[KEY_SESSION_PHONE] = phone
-        }
     }
 
     suspend fun themeMode(): String =
@@ -51,8 +34,6 @@ class SessionStore private constructor(private val dataStore: DataStore<Preferen
 
     companion object {
         private val KEY_DISCLAIMER_ACCEPTED = booleanPreferencesKey("disclaimer_accepted")
-        private val KEY_SESSION_UUID = stringPreferencesKey("session_uuid")
-        private val KEY_SESSION_PHONE = stringPreferencesKey("session_phone")
         private val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
 
         @Volatile

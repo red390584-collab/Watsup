@@ -11,7 +11,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // JaWa is on Maven Central; no JitPack needed.
     }
 }
 

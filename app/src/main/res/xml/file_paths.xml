@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Paths exposed by the FileProvider used for camera captures. -->
-<paths>
-    <cache-path name="captures" path="captures/" />
-</paths>
