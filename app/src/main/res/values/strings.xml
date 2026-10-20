@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Watsup</string>
     <string name="disclaimer_title">Important — Read Before Continuing</string>
-    <string name="disclaimer_body">This app loads the official WhatsApp Web client inside a custom mobile interface, so you can use it on your phone. It is an unofficial, personal-use tool and is not affiliated with WhatsApp or Meta. Linking your account through it may be limited by WhatsApp\\'s Terms of Service. You accept full responsibility for how you use it.</string>
+    <string name="disclaimer_body">This app loads the official WhatsApp Web client inside a custom mobile interface, so you can use it on your phone. It is an unofficial, personal-use tool and is not affiliated with WhatsApp or Meta. Linking your account through it may be limited by the WhatsApp Terms of Service. You accept full responsibility for how you use it.</string>
     <string name="disclaimer_continue">I Understand — Continue</string>
     <string name="disclaimer_exit">Exit</string>
 </resources>
