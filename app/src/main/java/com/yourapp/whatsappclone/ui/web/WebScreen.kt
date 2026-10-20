@@ -92,7 +92,8 @@ private fun createConfiguredWebView(context: Context): WebView =
             allowFileAccess = true
             cacheMode = WebSettings.LOAD_DEFAULT
             setSupportZoom(false)
-            builtinZoomControls = false
+            // setBuiltInZoomControls has no getter, so no Kotlin property exists.
+            setBuiltInZoomControls(false)
             displayZoomControls = false
             // Ignore system font scaling so the desktop layout doesn't break.
             textZoom = 100
